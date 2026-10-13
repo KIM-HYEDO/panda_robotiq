@@ -1,0 +1,33 @@
+<!-- MoveIt demo of the Panda + Robotiq 2F-85 with fake controllers (no robot needed) -->
+<launch>
+  <arg name="arm_id" default="panda"/>
+  <arg name="use_rviz" default="true"/>
+  <arg name="rviz_config" default="$(find panda_robotiq_moveit_config)/launch/moveit.rviz"/>
+  <arg name="fake_execution_type" default="interpolate"/>
+  <!-- Pose of the gripper on the flange and tool center point, see panda_robotiq_description -->
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0"
+        args="0 0 0 0 0 0 world $(arg arm_id)_link0"/>
+
+  <!-- Joint states come from the fake controllers -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <rosparam param="source_list">[move_group/fake_controller_joint_states]</rosparam>
+  </node>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true"/>
+
+  <include file="$(dirname)/move_group.launch">
+    <arg name="arm_id" value="$(arg arm_id)"/>
+    <arg name="moveit_controller_manager" value="fake"/>
+    <arg name="fake_execution_type" value="$(arg fake_execution_type)"/>
+    <arg name="mount_xyz" value="$(arg mount_xyz)"/>
+    <arg name="mount_rpy" value="$(arg mount_rpy)"/>
+    <arg name="tcp_xyz" value="$(arg tcp_xyz)"/>
+  </include>
+
+  <include file="$(dirname)/moveit_rviz.launch" if="$(arg use_rviz)">
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
+  </include>
+</launch>

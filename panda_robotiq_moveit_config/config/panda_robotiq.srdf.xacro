@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Semantic description of the Panda arm with a Robotiq 2F-85 gripper -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
+    <xacro:arg name="arm_id" default="panda"/>
+
+    <!-- Arm groups, named states and the self-collision matrix of the arm -->
+    <xacro:include filename="$(find panda_robotiq_moveit_config)/config/arm.xacro"/>
+    <!-- panda_arm: ends at the flange. manipulator: ends at the middle of the finger pads (robotiq_tcp) -->
+    <xacro:arm name="$(arg arm_id)_arm" tip_link="$(arg arm_id)_link8"/>
+    <xacro:arm name="$(arg arm_id)_manipulator" tip_link="robotiq_tcp"/>
+
+    <!-- Gripper: finger_joint is the only actuated joint, the other finger joints mimic it.
+         0 rad is fully open, 0.8 rad is fully closed.
+         All gripper links are listed so that RViz draws the whole gripper for the start and goal
+         states; with the joint alone only left_outer_knuckle would be drawn. The mimic joints that
+         come with the links are not planning variables. -->
+    <group name="robotiq_gripper">
+        <link name="robotiq_arg2f_base_link"/>
+        <link name="left_outer_knuckle"/>
+        <link name="left_outer_finger"/>
+        <link name="left_inner_knuckle"/>
+        <link name="left_inner_finger"/>
+        <link name="left_inner_finger_pad"/>
+        <link name="right_outer_knuckle"/>
+        <link name="right_outer_finger"/>
+        <link name="right_inner_knuckle"/>
+        <link name="right_inner_finger"/>
+        <link name="right_inner_finger_pad"/>
+        <joint name="finger_joint"/>
+    </group>
+    <group_state name="open" group="robotiq_gripper">
+        <joint name="finger_joint" value="0"/>
+    </group_state>
+    <group_state name="close" group="robotiq_gripper">
+        <joint name="finger_joint" value="0.7"/>
+    </group_state>
+    <end_effector name="robotiq_gripper" parent_link="robotiq_tcp" group="robotiq_gripper" parent_group="$(arg arm_id)_manipulator"/>
+
+    <!-- The gripper links are in contact by design (linkage and mounting) -->
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="left_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="left_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="robotiq_arg2f_base_link" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="left_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_knuckle" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_outer_finger" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_finger_pad" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_knuckle" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_knuckle" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_knuckle" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_knuckle" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="left_inner_knuckle" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_knuckle" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_knuckle" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_knuckle" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_knuckle" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_finger" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_finger" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="right_outer_finger" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="right_inner_finger" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="right_inner_finger" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="right_inner_finger_pad" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="robotiq_arg2f_base_link" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="left_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="left_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link6" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="robotiq_arg2f_base_link" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="left_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="left_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link7" link2="right_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="robotiq_arg2f_base_link" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="left_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="left_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="left_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="left_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="left_inner_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="right_outer_knuckle" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="right_outer_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="right_inner_finger" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="right_inner_finger_pad" reason="Adjacent"/>
+    <disable_collisions link1="$(arg arm_id)_link8" link2="right_inner_knuckle" reason="Adjacent"/>
+</robot>

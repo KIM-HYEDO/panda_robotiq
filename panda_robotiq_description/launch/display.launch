@@ -1,0 +1,14 @@
+<!-- Show the Panda + Robotiq model in RViz and move the joints with sliders -->
+<launch>
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+
+  <param name="robot_description"
+         command="xacro '$(find panda_robotiq_description)/urdf/panda_robotiq.urdf.xacro'
+                  mount_xyz:='$(arg mount_xyz)' mount_rpy:='$(arg mount_rpy)' tcp_xyz:='$(arg tcp_xyz)'"/>
+
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find panda_robotiq_description)/launch/display.rviz" required="true"/>
+</launch>

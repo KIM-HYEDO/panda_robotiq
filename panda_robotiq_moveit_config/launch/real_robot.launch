@@ -1,0 +1,51 @@
+<!-- Panda + Robotiq 2F-85 on the real hardware with MoveIt: bringup.launch, move_group, RViz.
+     MoveIt executes arm trajectories with the ros_control JointTrajectoryController and gripper
+     trajectories with the FollowJointTrajectory server of the Robotiq action server. -->
+<launch>
+  <arg name="robot_ip" doc="IP of the Panda controller (FCI)"/>
+  <arg name="arm_id" default="panda"/>
+  <arg name="transmission" default="position" doc="JointTrajectoryController for the arm: position or effort"/>
+  <arg name="gripper_sim" default="false" doc="simulate the gripper instead of opening the serial port"/>
+  <arg name="comport" default="/dev/ttyUSB0" doc="serial port of the gripper, see: dmesg | grep tty"/>
+  <arg name="baud" default="115200"/>
+  <arg name="gripper_force" default="50" doc="force [0-100] for gripper trajectories without effort, e.g. from RViz"/>
+  <arg name="set_ee_frame" default="true"/>
+  <arg name="use_rviz" default="true"/>
+  <arg name="rviz_config" default="$(dirname)/moveit.rviz"/>
+  <!-- Pose of the gripper on the flange and tool center point, see panda_robotiq_description -->
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_0"
+        args="0 0 0 0 0 0 world $(arg arm_id)_link0"/>
+
+  <include file="$(dirname)/bringup.launch">
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+    <arg name="arm_id" value="$(arg arm_id)"/>
+    <arg name="transmission" value="$(arg transmission)"/>
+    <arg name="gripper_sim" value="$(arg gripper_sim)"/>
+    <arg name="comport" value="$(arg comport)"/>
+    <arg name="baud" value="$(arg baud)"/>
+    <arg name="gripper_force" value="$(arg gripper_force)"/>
+    <arg name="set_ee_frame" value="$(arg set_ee_frame)"/>
+    <arg name="mount_xyz" value="$(arg mount_xyz)"/>
+    <arg name="mount_rpy" value="$(arg mount_rpy)"/>
+    <arg name="tcp_xyz" value="$(arg tcp_xyz)"/>
+  </include>
+
+  <include file="$(dirname)/move_group.launch">
+    <arg name="arm_id" value="$(arg arm_id)"/>
+    <arg name="moveit_controller_manager" value="simple"/>
+    <arg name="transmission" value="$(arg transmission)"/>
+    <!-- robot_description is loaded by bringup.launch -->
+    <arg name="load_robot_description" value="false"/>
+    <arg name="mount_xyz" value="$(arg mount_xyz)"/>
+    <arg name="mount_rpy" value="$(arg mount_rpy)"/>
+    <arg name="tcp_xyz" value="$(arg tcp_xyz)"/>
+  </include>
+
+  <include file="$(dirname)/moveit_rviz.launch" if="$(arg use_rviz)">
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
+  </include>
+</launch>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!-- Franka Emika Panda arm + Robotiq 2F-85 gripper.
+     The arm comes unmodified from franka_description (hand:=false); the gripper is mounted on
+     ${arm_id}_link8 with a fixed joint. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro"/>
+
+  <xacro:arg name="arm_id" default="panda"/>
+  <!-- Pose of the gripper base (robotiq_arg2f_base_link) relative to ${arm_id}_link8.
+       Measure these on the real robot if an adapter plate is used. -->
+  <xacro:arg name="mount_xyz" default="0 0 0"/>
+  <xacro:arg name="mount_rpy" default="0 0 0"/>
+  <!-- Tool center point relative to robotiq_arg2f_base_link: the middle of the finger pads (z = 0.1303 m) -->
+  <xacro:arg name="tcp_xyz" default="0 0 0.1303"/>
+  <xacro:arg name="tcp_rpy" default="0 0 0"/>
+
+  <xacro:franka_robot arm_id="$(arg arm_id)"
+                      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/panda/joint_limits.yaml')}"
+                      hand="false"/>
+
+  <xacro:robotiq_arg2f_85 prefix=""/>
+
+  <joint name="$(arg arm_id)_link8_to_robotiq" type="fixed">
+    <parent link="$(arg arm_id)_link8"/>
+    <child link="robotiq_arg2f_base_link"/>
+    <origin xyz="$(arg mount_xyz)" rpy="$(arg mount_rpy)"/>
+  </joint>
+
+  <link name="robotiq_tcp"/>
+  <joint name="robotiq_base_to_tcp" type="fixed">
+    <parent link="robotiq_arg2f_base_link"/>
+    <child link="robotiq_tcp"/>
+    <origin xyz="$(arg tcp_xyz)" rpy="$(arg tcp_rpy)"/>
+  </joint>
+</robot>

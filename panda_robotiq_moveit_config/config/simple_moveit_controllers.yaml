@@ -1,0 +1,22 @@
+# Controllers MoveIt executes trajectories with on the real robot (MoveItSimpleControllerManager).
+controller_list:
+  # Arm: ros_control JointTrajectoryController started by bringup.launch
+  - name: $(arg transmission)_joint_trajectory_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: True
+    joints:
+      - $(arg arm_id)_joint1
+      - $(arg arm_id)_joint2
+      - $(arg arm_id)_joint3
+      - $(arg arm_id)_joint4
+      - $(arg arm_id)_joint5
+      - $(arg arm_id)_joint6
+      - $(arg arm_id)_joint7
+  # Gripper: FollowJointTrajectory server of robotiq_2f_action_server.py
+  - name: robotiq_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: True
+    joints:
+      - finger_joint

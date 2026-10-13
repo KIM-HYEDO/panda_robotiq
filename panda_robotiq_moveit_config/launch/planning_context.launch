@@ -1,0 +1,24 @@
+<launch>
+  <arg name="arm_id" default="panda"/>
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+  <!-- false when another launch file (bringup.launch) already loaded robot_description -->
+  <arg name="load_robot_description" default="true"/>
+
+  <!-- Robot model, semantic description (SRDF) and limits -->
+  <param if="$(arg load_robot_description)" name="robot_description"
+         command="xacro '$(find panda_robotiq_description)/urdf/panda_robotiq.urdf.xacro' arm_id:=$(arg arm_id)
+                  mount_xyz:='$(arg mount_xyz)' mount_rpy:='$(arg mount_rpy)' tcp_xyz:='$(arg tcp_xyz)'"/>
+  <param name="robot_description_semantic"
+         command="xacro '$(find panda_robotiq_moveit_config)/config/panda_robotiq.srdf.xacro' arm_id:=$(arg arm_id)"/>
+
+  <group ns="robot_description_planning">
+    <rosparam command="load" file="$(find panda_robotiq_moveit_config)/config/joint_limits.yaml" subst_value="true"/>
+    <rosparam command="load" file="$(find panda_robotiq_moveit_config)/config/cartesian_limits.yaml" subst_value="true"/>
+  </group>
+
+  <group ns="robot_description_kinematics">
+    <rosparam command="load" file="$(find panda_robotiq_moveit_config)/config/kinematics.yaml" subst_value="true"/>
+  </group>
+</launch>

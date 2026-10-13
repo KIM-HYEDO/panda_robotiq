@@ -1,0 +1,40 @@
+<launch>
+  <arg name="arm_id" default="panda"/>
+  <arg name="pipeline" default="ompl"/>
+  <!-- fake: demo without a robot. simple: real robot, see simple_moveit_controllers.yaml -->
+  <arg name="moveit_controller_manager" default="fake"/>
+  <arg name="fake_execution_type" default="interpolate"/>
+  <!-- Arm controller used with the simple controller manager: position or effort -->
+  <arg name="transmission" default="position"/>
+  <arg name="load_robot_description" default="true"/>
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+
+  <include file="$(dirname)/planning_context.launch">
+    <arg name="arm_id" value="$(arg arm_id)"/>
+    <arg name="load_robot_description" value="$(arg load_robot_description)"/>
+    <arg name="mount_xyz" value="$(arg mount_xyz)"/>
+    <arg name="mount_rpy" value="$(arg mount_rpy)"/>
+    <arg name="tcp_xyz" value="$(arg tcp_xyz)"/>
+  </include>
+
+  <group ns="move_group/planning_pipelines">
+    <include file="$(dirname)/planning_pipeline.launch.xml">
+      <arg name="pipeline" value="$(arg pipeline)"/>
+      <arg name="arm_id" value="$(arg arm_id)"/>
+    </include>
+  </group>
+
+  <include ns="move_group" file="$(dirname)/trajectory_execution.launch.xml" pass_all_args="true"/>
+
+  <node name="move_group" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen">
+    <env name="DISPLAY" value="$(optenv DISPLAY :0)"/>
+    <param name="allow_trajectory_execution" value="true"/>
+    <param name="default_planning_pipeline" value="$(arg pipeline)"/>
+    <param name="planning_scene_monitor/publish_planning_scene" value="true"/>
+    <param name="planning_scene_monitor/publish_geometry_updates" value="true"/>
+    <param name="planning_scene_monitor/publish_state_updates" value="true"/>
+    <param name="planning_scene_monitor/publish_transforms_updates" value="true"/>
+  </node>
+</launch>

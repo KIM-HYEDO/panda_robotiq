@@ -1,0 +1,57 @@
+<!-- Real hardware without MoveIt: franka_control for the arm, the Robotiq action server for the gripper,
+     one /joint_states with every joint, TF. Also the base for franka_example_controllers.
+     Mirrors franka_control/launch/franka_control.launch with the Panda + Robotiq URDF and no Franka Hand. -->
+<launch>
+  <arg name="robot_ip" doc="IP of the Panda controller (FCI)"/>
+  <arg name="arm_id" default="panda"/>
+  <arg name="load_robot_description" default="true"/>
+  <arg name="transmission" default="position" doc="JointTrajectoryController to start: position or effort"/>
+  <arg name="gripper" default="true" doc="start the Robotiq action server"/>
+  <arg name="gripper_sim" default="false" doc="simulate the gripper instead of opening the serial port"/>
+  <arg name="comport" default="/dev/ttyUSB0" doc="serial port of the gripper, see: dmesg | grep tty"/>
+  <arg name="baud" default="115200"/>
+  <arg name="gripper_force" default="50" doc="force [0-100] for gripper trajectories without effort, e.g. from RViz"/>
+  <arg name="set_ee_frame" default="true" doc="make the robot's end-effector frame equal to robotiq_tcp"/>
+  <!-- Pose of the gripper on the flange and tool center point, see panda_robotiq_description -->
+  <arg name="mount_xyz" default="0 0 0"/>
+  <arg name="mount_rpy" default="0 0 0"/>
+  <arg name="tcp_xyz" default="0 0 0.1303"/>
+
+  <param if="$(arg load_robot_description)" name="robot_description"
+         command="xacro '$(find panda_robotiq_description)/urdf/panda_robotiq.urdf.xacro' arm_id:=$(arg arm_id)
+                  mount_xyz:='$(arg mount_xyz)' mount_rpy:='$(arg mount_rpy)' tcp_xyz:='$(arg tcp_xyz)'"/>
+
+  <!-- Arm -->
+  <node name="franka_control" pkg="franka_control" type="franka_control_node" output="screen" required="true">
+    <rosparam command="load" file="$(find franka_control)/config/franka_control_node.yaml" subst_value="true"/>
+    <param name="robot_ip" value="$(arg robot_ip)"/>
+  </node>
+  <rosparam command="load" file="$(find franka_control)/config/default_controllers.yaml" subst_value="true"/>
+  <node name="state_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+        args="franka_state_controller"/>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
+        args="$(arg transmission)_joint_trajectory_controller"/>
+
+  <!-- Gripper. Its joint state goes to robotiq/joint_states and is merged below. -->
+  <node if="$(arg gripper)" name="robotiq_2f_action_server" pkg="robotiq_2f_gripper_control"
+        type="robotiq_2f_action_server.py" output="screen">
+    <param name="comport" value="$(arg comport)"/>
+    <param name="baud" value="$(arg baud)"/>
+    <param name="stroke" value="0.085"/>
+    <param name="joint_name" value="finger_joint"/>
+    <param name="sim" value="$(arg gripper_sim)"/>
+    <param name="trajectory_force" value="$(arg gripper_force)"/>
+    <remap from="/joint_states" to="/robotiq/joint_states"/>
+  </node>
+
+  <!-- One /joint_states for everything. joint_state_publisher also fills in the mimic finger joints. -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="screen">
+    <rosparam param="source_list">[franka_state_controller/joint_states, robotiq/joint_states]</rosparam>
+    <param name="rate" value="30"/>
+  </node>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
+
+  <!-- O_T_EE of the robot = robotiq_tcp, see panda_robotiq_description/scripts/set_ee_frame.py -->
+  <node if="$(arg set_ee_frame)" name="set_ee_frame" pkg="panda_robotiq_description" type="set_ee_frame.py"
+        output="screen"/>
+</launch>
